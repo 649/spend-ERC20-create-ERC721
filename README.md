@@ -31,6 +31,13 @@ The following are promises this ERC721 smart contract aims to accomplish:
 
 
 ## Try the beta
+
+### Using testnet
+The following contract addresses can be found on the Goerli testnet
+* QMSI-ERC20: 0x2A69802F38ce178D484932AdECA92F73a414C186
+* QMSI-ERC721: 0x94F70B0f70FD8C6c24E00F8ca6001a28C9aE5987
+
+### Using our site
 Install MetaMask and visit https://qumosi.com/about.php to request an invite key
 
 Once you have an invite key, register an account at https://qumosi.com/register.php 
