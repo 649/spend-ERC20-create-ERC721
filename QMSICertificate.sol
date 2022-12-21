@@ -169,7 +169,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      *
      */
     function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal virtual {
-        require(bytes(_tokenURI).length > 0, "ERC721Metadata: URI cannot be empty");
+        require(bytes(_tokenURI).length > 0, "QMSI-ERC721: token URI cannot be empty");
         _tokenURIs[tokenId] = _tokenURI;
     }
 
@@ -180,8 +180,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      *
      */
     function _setTokenCommissionProperty(uint256 tokenId, uint256 percentage) internal virtual{
-        require(percentage >= 0, "ERC721CommissionProperty: Cannot be negative");
-        require(percentage <= 100, "ERC721CommissionProperty: Cannot be above 100%");
+        require(percentage >= 0 && percentage <= 100, "QMSI-ERC721: Commission property must be a percent integer");
         _tokenCommission[tokenId] = percentage;
     }
 
@@ -192,9 +191,9 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      *
      */
     function setTokenCommissionProperty(uint256 tokenId, uint256 percentage_) external{
-        require(bytes(_tokenURIs[tokenId]).length > 0, "ERC721Buy: nonexistent token");
-        require(msg.sender == _tokenMinter[tokenId], "ERC721Sell: Must be the original minter to set commission rate");
-        require(percentage_ > 0, "ERC721Sell: Must set a percentage to receive commission");
+        require(bytes(_tokenURIs[tokenId]).length > 0, "QMSI-ERC721: Nonexistent token");
+        require(msg.sender == _tokenMinter[tokenId], "QMSI-ERC721: Must be the original minter to set commission rate");
+        require(percentage_ >= 0 && percentage_ <= 100, "QMSI-ERC721: Commission property must be a percent integer");
         _setTokenCommissionProperty(tokenId, percentage_);
     }
 
@@ -204,7 +203,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      *
      */
     function _setTokenMinter(uint256 tokenId) internal virtual {
-        require(msg.sender != address(0), "ERC721CommissionProperty: TokenMinter invalid");
+        require(msg.sender != address(0), "QMSI-ERC721: Invalid address");
         _tokenMinter[tokenId] = msg.sender;
     }
 
@@ -227,9 +226,9 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      *
      */
     function sellToken(uint256 tokenId, uint256 _tokenPrice) external {
-        require(bytes(_tokenURIs[tokenId]).length > 0, "ERC721Buy: nonexistent token");
-        require(msg.sender == idToOwner[tokenId], "ERC721Sell: Must own token in order to sell");
-        require(_tokenPrice > 0, "ERC721Sell: Must set a price to sell token for");
+        require(bytes(_tokenURIs[tokenId]).length > 0, "QMSI-ERC721: Nonexistent token");
+        require(msg.sender == idToOwner[tokenId], "QMSI-ERC721: Must own token in order to sell");
+        require(_tokenPrice > 0, "QMSI-ERC721: Must set a price to sell token for");
         _setTokenPrice(tokenId, _tokenPrice);
     }
 
@@ -239,9 +238,9 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      *
      */
     function removeListing(uint256 tokenId) external {
-        require(bytes(_tokenURIs[tokenId]).length > 0, "ERC721removeListing: nonexistent token");
-        require(msg.sender == idToOwner[tokenId], "ERC721removeListing: Must own token in order to remove listing");
-        require(_tokenPrices[tokenId] > 0, "ERC721Sell: Must be selling in order to remove listing");
+        require(bytes(_tokenURIs[tokenId]).length > 0, "QMSI-ERC721: Nonexistent token");
+        require(msg.sender == idToOwner[tokenId], "QMSI-ERC721: Must own token in order to remove listing");
+        require(_tokenPrices[tokenId] > 0, "QMSI-ERC721: Must be selling in order to remove listing");
         _tokenPrices[tokenId] = 0;
     }
 
@@ -252,8 +251,8 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      *
      */
     function setTokenURI(uint256 tokenId, string memory tokenURI) external {
-        require(bytes(_tokenURIs[tokenId]).length > 0, "ERC721setTokenURI: Token has no URI");
-        require(msg.sender == _tokenMinter[tokenId], "ERC721setTokenURI: Must be the original minter to set URI");
+        require(bytes(_tokenURIs[tokenId]).length > 0, "QMSI-ERC721: Nonexistent token");
+        require(msg.sender == _tokenMinter[tokenId], "QMSI-ERC721: Must be the original minter to set URI");
         _setTokenURI(tokenId, tokenURI);
     }
 
@@ -264,7 +263,6 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      *
      */
     function tokenPrice(uint256 tokenId) external view returns (uint256) {
-        // require(_tokenPrices[tokenId] > 0, "ERC721Metadata: Token not for sale");
         return _tokenPrices[tokenId];
     }
 
@@ -275,7 +273,6 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      *
      */
     function tokenCommission(uint256 tokenId) external view returns (uint256) {
-        // require(_tokenCommission[tokenId] > 0, "ERC721Metadata: Token has no commission");
         return _tokenCommission[tokenId];
     }
 
@@ -296,8 +293,8 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      *
      */
     function buyToken(address from, uint256 tokenId) external {
-        require(_isContract(msg.sender) == true, "ERC721: Only contract addresses can use this function");
-        require(msg.sender == address(_mintingCurrency), "ERC721: Only the set currency can buy NFT on behalf of the user");
+        require(_isContract(msg.sender) == true, "QMSI-ERC721: Only contract addresses can use this function");
+        require(msg.sender == address(_mintingCurrency), "QMSI-ERC721: Only the set currency can buy NFT on behalf of the user");
         _transfer(from, tokenId);
         _tokenPrices[tokenId] = 0;
         emit SoldNFT(idToOwner[tokenId], tokenId, from);
@@ -338,7 +335,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
 
     /**
      * @notice Allows anybody to create a certificate, takes payment from the
-     *   msg.sender
+     *   msg.sender. Can only be called by the mintingCurrency contract
      * @param dataHash A representation of the certificate data using the Aria
      *   protocol (a 0xcert cenvention).
      * @param tokenURI_ The (optional) remote location of the certificate's JSON artifact, represented by the dataHash
@@ -348,15 +345,10 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      *
      */
     function create(bytes32 dataHash, string memory tokenURI_, uint256 tokenPrice_, uint256 commission_) external returns (uint) {
-        require(_isContract(msg.sender) == true, "ERC721: Only contract addresses can use this function");
-        require(msg.sender == address(_mintingCurrency), "ERC721: Only the set currency can create NFT on behalf of the user");
-        //uint256 currentMintingPrice = this.mintingPrice();
-        //require(mintingPrice_ == currentMintingPrice, "ERC721: Minting price does not match");
-        
-        // Burn an amount based on the current burn rate (dependent on current supply and allowed total supply)
-        //_mintingCurrency.spend(msg.sender, currentMintingPrice);
+        require(_isContract(msg.sender) == true, "QMSI-ERC721: Only contract addresses can use this function");
+        require(msg.sender == address(_mintingCurrency), "QMSI-ERC721: Only the set currency can create NFT on behalf of the user");
 
-        // Set URI of token (optional)
+        // Set URI of token
         _setTokenURI(nextCertificateId, tokenURI_);
 
         // Set price of token (optional)

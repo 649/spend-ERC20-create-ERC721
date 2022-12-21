@@ -21,12 +21,13 @@ The following are promises this ERC721 smart contract aims to accomplish:
 4. Contract owner may set a token URI prefix to all resource links
 5. Certificate minting cost is influenced by burn rate based on tokens in circulation and max supply
 6. All certificates come with verifiable checksum representing JSON preferred resource
-7. Minters are able to set resource links on ERC721 certificate (token URI)
-8. Minters are able to set commission rate on ERC721 certificate (percent)
-9. Certificate owners are able to sell QMSI-721 for corresponding QMSI-ERC20 tokens 
-10. Certificate owners are able to approveAll QMSI-ERC721 certificates to another user
-11. Certificate owners and approved users are able to transfer QMSI-ERC721 certificates
-12. Certificate owners and approved users are able to remove sell listings on QMSI-ERC721 certificates
+7. All certificates come with a unique token id that increments by 1 each time the `create` function is called successfully
+8. Minters are required to set a resource link on ERC721 certificate (token URI)
+9. Minters are able to set commission rate on ERC721 certificate (percent integer)
+10. Certificate owners are able to sell QMSI-721 for corresponding QMSI-ERC20 tokens 
+11. Certificate owners are able to approveAll QMSI-ERC721 certificates to another user
+12. Certificate owners and approved users are able to transfer QMSI-ERC721 certificates
+13. Certificate owners and approved users are able to remove sell listings on QMSI-ERC721 certificates
 
 
 ## Try the beta
@@ -54,28 +55,28 @@ You can use your testnet QMSI ERC20 tokens to mint new projects on https://qumos
 * `setTokenURI(uint256 tokenId, string memory tokenURI)` — Allows minter to set token URI resource link to JSON artifact. Implemented using [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts/pull/2511/files)
 * `setTokenCommissionProperty(uint256 tokenId, uint256 percentage_)` — Allows minter to take percentage of proceeds from SoldNFT events
 
-* `setDeadmanSwitch(address kin_, uint256 days_)` — Allows the contract owner to
-* `claimSwitch()` — Allows the `kin` of the switch to claim it, transferring ownership. Only works if the switch is expired
+* `setDeadmanSwitch(address kin_, uint256 days_)` — Allows the contract owner to set ownership to transfer to a "kin" address if the number of specified days surpass without this function being called again, in order to reset the timer.
+* `claimSwitch()` — Allows the `kin` of the switch to claim it, transferring ownership. Only works if the switch is expired from the time it was set. If switch expires, owner is assumed dead.
 * `getKin() view` — Returns the address of the next of kin
 * `getExpiry() view` — Returns the expiration timestamp of the switch that allows ownership transfer
 
-* `buyToken(address from, uint256 tokenId)` — Allows transferring ownership of certificate if funds have been transferred to the owner that made the sell token listing
+* `buyToken(address from, uint256 tokenId)` — Allows transferring ownership of certificate if tokens have been transferred to the owner that made the sell token listing
 * `sellToken(uint256 tokenId, uint256 _tokenPrice)` — Allows the certificate owner to sell token by specifying the price in ERC20 units and token id
 * `removeListing(uint256 tokenId)` — Allows the certificate owner to remove an existing listing to sell the token by specifying the token id
 
 * `tokenPrice(uint256 tokenId) view` — Returns the price of a certificate, if it is listed for sale
 * `tokenMinter(uint256 tokenId) view` — Returns the original minter of a certificate
-* `tokenURI(uint256 tokenId) view` — Returns the resource link to the token's (JSON) artifact
+* `tokenURI(uint256 tokenId) view` — Returns the resource link to the token's (JSON) artifact. Implemented using [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts/pull/2511/files)
 * `tokenCommission(uint256 tokenId) view` — Returns the percent token commission rate that is taken by the original minter per SoldNFT event
 
 **ERC-20 token contract** — This is a standard ERC-721 contract implemented using the [OpenZeppelin template](https://github.com/OpenZeppelin/openzeppelin-solidity/tree/master/contracts/token/ERC20) with additional functions:
 
-* `spend(account from, uint256 value)` — Allows end user to burn their own funds. It can only be triggered by the user, and is used in minting new certificates.
-* `burnPool() view` — Returns the amount of funds that can be reclaimed through staking. Using the `spend` function increments this pool
-* `burnRate() view` — Returns a number 0 to 100 that represents the percentage of funds in circulation (current supply / max supply)
+* `spend(account from, uint256 value)` — Allows end user to burn their own tokens. It can only be triggered by the user, and is used in minting new certificates.
+* `burnPool() view` — Returns the amount of tokens that can be reclaimed through staking. Using the `spend` function increments this pool
+* `burnRate() view` — Returns a number 0 to 100 that represents the percentage of tokens in circulation (current supply / max supply)
 
 * `stake(uint256 days_, uint256 value_)` — Allows locking ERC20 tokens for number of days to reclaim some burned tokens as reward
-* `unlockFunds()` — Allows unlocking locked ERC20 tokens and reward after the unlock date has reached
+* `unlockTokens()` — Allows unlocking locked ERC20 tokens and reward after the unlock date has reached
 * `totalStaked() view` — Returns total number of staked ERC20 tokens
 * `lockedBalanceOf(address account) view` — Returns the locked balance of an address that is staking
 * `unlockDate(address account) view` — Returns the unlock date for an address that is staking
@@ -89,12 +90,13 @@ You can use your testnet QMSI ERC20 tokens to mint new projects on https://qumos
 
 ## Contract differences and assumptions
 The following are key differenes in the smart contract implementation from the original.
-* The ERC20 implementation does not use a spender role on corresponding ERC721 contract, it was removed in favor of not allowing the ERC721 implementation the ability to spend any user's funds
-* The users of the ERC20 implementation have the ability to burn their own funds, it was done this way in favor of giving the user control and not the smart contract itself
-* There is no owner role in the ERC20 implementation, it is assumed that the burn and stake functions will make the environment self sustaining since no liquidity is lost
-* There is no mint capability other than the one used during the contract deployment, inside the constructor
+* The ERC20 implementation does not use a spender role on corresponding ERC721 contract, it was removed in favor of not allowing the ERC721 implementation the ability to spend any user's tokens
+* The users of the ERC20 implementation have the ability to burn their own tokens, it was done this way in favor of giving the user control and not the smart contract itself
+* There is no owner role in this ERC20 implementation
 * Inside the ERC721 implementation, there is a deadman switch to protect the owner role
-* The "rice and chessboard" problem in staking is fixed by only allowing rewards to come from burned tokens only
+* It is assumed that the burn and stake functions will self sustain token supply since no liquidity is lost, only state changed
+* There is no mint capability other than the one used during the contract deployment, inside the constructor
+* The "rice and chessboard" problem in staking is fixed by allowing rewards to come from burned tokens only
 
 ## How to deploy
 Clone this repository and use remix to deploy both .sol source files. 
