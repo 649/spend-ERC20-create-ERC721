@@ -8,7 +8,8 @@ import "./OpenZeppelin/EnumerableSet.sol";
 The interface for the 721 contract
 These functions are required inside a market/certificate contract in order for this contract to interface correctly
 */
-interface QMSI721 {
+interface QMSI721 { 
+  // CSHP: 1.1. Does this interface guarantee the structure of the smart contract we type cast to?
   function tokenCommission(uint256 tokenId) external view returns (uint256);
   function tokenURI(uint256 tokenId) external view returns (string memory);
   function tokenPrice(uint256 tokenId) external view returns (uint256);
@@ -129,7 +130,8 @@ contract QMSI_20 is ERC20, ERC20Spendable {
       uint256 reward = ((value_ * days_) / totalSupply());
       require(reward + totalSupply() + totalStaked() < maxSupply(), "QMSI-ERC20: Reward exceeds total supply");
       require(reward < burnPool(), "QMSI-ERC20: Not enough tokens to reward user from the burn pool");
-
+      // CSHP: 2.1. Is it self sufficient to use "burned" values as part of a stake pool to reclaim tokens since there is no other forms of minting after the constructor finishes?
+      // CSHP: 2.2. Are there ways to emulate bad liquidity scenarios to account for things like impermanent loss?
       _Staked[msg.sender] = value_ + reward;
       _Unlocker[msg.sender] = block.timestamp + (days_ * 1 days);
       _totalStaked += _Staked[msg.sender];
@@ -175,7 +177,9 @@ contract QMSI_20 is ERC20, ERC20Spendable {
      */
     function rewardsCalculator(uint256 days_, uint256 value_) public view virtual returns (uint256) {
       require(value_ <= totalSupply(), "QMSI-ERC20: Value exceeds available token supply");
+      // CSHP: 3.1. Is this a good formula for staking existing funds? Are there some notable standards to follow here?
       uint256 reward = ((value_ * days_) / totalSupply());
+      // CSHP: 3.2. Does this avoid the "rice and chessboard" problem by using a burn pool?
       require(reward < burnPool(), "QMSI-ERC20: Not enough tokens to reward user from the burn pool");
       require(reward + totalSupply() + totalStaked() < maxSupply(), "QMSI-ERC20: Reward exceeds total supply");
       return reward;
@@ -210,7 +214,7 @@ contract QMSI_20 is ERC20, ERC20Spendable {
     }else{
       transfer(to, tokenPrice_);
     }
-
+    // CSHP: 1.2. Is it safe to point to arbitrary "market" address given that the interface is defined?
     QMSI721(market).buyToken(msg.sender, tokenId);
     return true;
   }
@@ -236,7 +240,7 @@ contract QMSI_20 is ERC20, ERC20Spendable {
     // determine value that needs to be burrned, will always be equal to or less than minting price
     uint256 burnValue = (mintingPrice*this.burnRate())/100;
     spend(burnValue);
-    
+    // CSHP: 1.3. Is this a better alternative to approving each 721 using a spender role?
     return QMSI721(market).create(dataHash, tokenURI_, tokenPrice_, commission_);
   }
 }
