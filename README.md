@@ -24,7 +24,7 @@ The following are promises this ERC721 smart contract aims to accomplish:
 7. All certificates come with a unique token id that increments by 1 each time the `create` function is called successfully
 8. Minters are required to set a resource link on ERC721 certificate (token URI)
 9. Minters are able to set commission rate on ERC721 certificate (percent integer)
-10. Certificate owners are able to sell QMSI-721 for corresponding QMSI-ERC20 tokens 
+10. Certificate owners are able to sell QMSI-721 for corresponding QMSI-ERC20 tokens
 11. Certificate owners are able to approveAll QMSI-ERC721 certificates to another user
 12. Certificate owners and approved users are able to transfer QMSI-ERC721 certificates
 13. Certificate owners and approved users are able to remove sell listings on QMSI-ERC721 certificates
@@ -40,7 +40,7 @@ The following contract addresses can be found on the Goerli testnet
 ### Using our site
 Install MetaMask and visit https://qumosi.com/about.php to request an invite key
 
-Once you have an invite key, register an account at https://qumosi.com/register.php 
+Once you have an invite key, register an account at https://qumosi.com/register.php
 Switch Metamask network to Goerli testnet and make sure to have some testnet ETH to cover gas fees
 We have a preconfigured Uniswap liquidity pool that can be used to trade testnet ETH for testnet QMSI
 
@@ -78,7 +78,7 @@ You can use your testnet QMSI ERC20 tokens to mint new projects on https://qumos
 
 **ERC-20 token contract** — This is a standard ERC-721 contract implemented using the [OpenZeppelin template](https://github.com/OpenZeppelin/openzeppelin-solidity/tree/master/contracts/token/ERC20) with additional functions:
 
-* `spend(account from, uint256 value)` — Allows end user to burn their own tokens. It can only be triggered by the user, and is used in minting new certificates.
+* `spend(uint256 value)` — Allows end user to burn their own tokens. It can only be triggered by the user, and is used in minting new certificates.
 * `burnPool() view` — Returns the amount of tokens that can be reclaimed through staking. Using the `spend` function increments this pool
 * `burnRate() view` — Returns a number 0 to 100 that represents the percentage of tokens in circulation (current supply / max supply)
 
@@ -96,20 +96,25 @@ You can use your testnet QMSI ERC20 tokens to mint new projects on https://qumos
 * `getQNS(address account) view` — Returns Qumosi profile ID associated with wallet address
 
 ## Contract differences and assumptions
-The following are key differenes in the smart contract implementation from the original.
+The following are key differences in the smart contract implementation from the original:
 * The ERC20 implementation does not use a spender role on corresponding ERC721 contract, it was removed in favor of not allowing the ERC721 implementation the ability to spend any user's tokens
-* The users of the ERC20 implementation have the ability to burn their own tokens, it was done this way in favor of giving the user control and not the smart contract itself
-* There is no owner role in this ERC20 implementation
-* Inside the ERC721 implementation, there is a deadman switch to protect the owner role
-* It is assumed that the burn and stake functions will self sustain token supply since no liquidity is lost, only state changed
-* There is no mint capability other than the one used during the contract deployment, inside the constructor
-* The "rice and chessboard" problem in staking is fixed by allowing rewards to come from burned tokens only
+* The ERC20 implementation gives users the ability to burn their own tokens, it was done in favor of giving more control to the user; the old implementation allowed any user with the spender role in addition to the spender ERC721 smart contract(s) to burn any user's tokens
+* The ERC20 implementation has no owner role
+* The ERC721 implementation has a deadman switch to protect the owner role by transferring ownership to a kin if the switch is not renewed by the owner via a defined time interval
+* The ERC20 implementation has burn and stake functions that are assumed to self sustain token supply since no liquidity is lost, only state changed. This does not account for impermanent loss
+* The ERC20 implementation has no mint capability within other than the one used once during the contract deployment, inside the constructor
+* The ERC20 implementation aims to fix the "rice and chessboard" problem in staking by allowing rewards to come from burned tokens only
+* The ERC20 implementation requires the user to supply the commission rate and token price when buying a NFT certificate to prevent users from transacting with old information that could have changed (for example, while viewing a webpage and not refreshing it after a change in price or commission)
+* The ERC20 implementation requires the user to supply the minting price set by the ERC721 implementation (without the burn rate applied) to prevent users from burning an unidentified amount when minting new certificates (for example, minting a new certificate while not checking to see if the minting price had changed)
+* The ERC721 implementation includes a optional commission rate attribute that allows the original minter of the certificate to earn a set percentage of transacted QMSI ERC20 tokens each time the NFT is sold via the `crossTokenBuy` function; this value can change but the buyer is aware of the changes since the percent rate has to be supplied when the buy function is invoked
+* The ERC20 implementation allows both buying (`crossTokenBuy`) and minting (`crossTokenCreate`) ERC721 certificates freely with no spender role by taking in a smart contract address parameter `market` that is assumed to have the necessary functions in order to both mint and transfer ownership of the NFT certificates; It was done in favor of allowing merchants to create their own custom but QMSI compliant ERC721 contracts that can interact with the QMSI ERC20 contract without needing approval
+* The ERC20 implementation assumes that a malicious ERC721 contract supplied in the `market` parameter of either `crossToken*` functions cannot move ERC20 tokens in an unauthorized fashion without the user's knowledge prior to approving the transaction no matter how it is implemented by a merchant
 
 ## How to deploy
-Clone this repository and use remix to deploy both .sol source files. 
+Clone this repository and use remix to compile and deploy both .sol source files.
 
 ## Attribution
 
 The original https://fulldecent.github.io/spend-ERC20-create-ERC721/ was created by William Entriken. Please visit that repository for more information.
 
-New additions to the smart contract done by https://twitter.com/037 (@649)
+New additions to the smart contract done by [twit:@037](https://twitter.com/037) / [git:@649](https://github.com/649)
