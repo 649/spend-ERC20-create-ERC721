@@ -34,8 +34,8 @@ The following are promises this ERC721 smart contract aims to accomplish:
 
 ### Using testnet
 The following contract addresses can be found on the Goerli testnet
-* QMSI-ERC20: 0x2A69802F38ce178D484932AdECA92F73a414C186
-* QMSI-ERC721: 0x94F70B0f70FD8C6c24E00F8ca6001a28C9aE5987
+* QMSI-ERC20: 0x8407D89E3EaE3083aC1bC774508Fce0CB0de3E27
+* QMSI-ERC721: 0x8aaE0af229785dFC973144c3D88396E9f975C2DB
 
 ### Using our site
 Install MetaMask and visit https://qumosi.com/about.php to request an invite key
@@ -50,7 +50,7 @@ You can use your testnet QMSI ERC20 tokens to mint new projects on https://qumos
 
 **ERC-721 certificate contract** — This is a standard ERC-721 contract implemented using the [0xcert template](https://github.com/0xcert/ethereum-erc721/tree/master/contracts/tokens) with additional functions:
 
-* `create(bytes32 dataHash) returns (uint256)` — Allows anybody to create a certificate (NFT). Causes the side effect of deducting a certain amount of money from the user, payable in ERC-20 tokens. The return value is a serial number. It is called by the ERC20 contract only.
+* `create(bytes32 dataHash, string memory tokenURI_, uint256 tokenPrice_, uint256 commission_, address minter_) returns (uint256)` — Allows anybody to create a certificate (NFT) via the ERC20 contract `crossTokenCreate` function. Causes the side effect of deducting a certain amount of money from the user, payable in ERC-20 tokens. The return value is a serial number. It is called by the ERC20 contract only.
 * `hashForToken(uint256 tokenId) view` — Allows anybody to find the data hash for a given serial number.
 * `mintingPrice() view` — Returns the mint price influenced by the burn rate.
 * `trueMintingPrice() view` — Returns the mint price without influence.

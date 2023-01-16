@@ -202,9 +202,9 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      * @param tokenId the id of the certificate that is being minted
      *
      */
-    function _setTokenMinter(uint256 tokenId) internal virtual {
-        require(msg.sender != address(0), "QMSI-ERC721: Invalid address");
-        _tokenMinter[tokenId] = msg.sender;
+    function _setTokenMinter(uint256 tokenId, address minter) internal virtual {
+        require(minter != address(0), "QMSI-ERC721: Invalid address");
+        _tokenMinter[tokenId] = minter;
     }
 
     /**
@@ -344,7 +344,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      * @return The new certificate ID
      *
      */
-    function create(bytes32 dataHash, string memory tokenURI_, uint256 tokenPrice_, uint256 commission_) external returns (uint) {
+    function create(bytes32 dataHash, string memory tokenURI_, uint256 tokenPrice_, uint256 commission_, address minter_) external returns (uint) {
         require(_isContract(msg.sender) == true, "QMSI-ERC721: Only contract addresses can use this function");
         require(msg.sender == address(_mintingCurrency), "QMSI-ERC721: Only the set currency can create NFT on behalf of the user");
 
@@ -355,12 +355,12 @@ contract QMSI_721 is NFToken, DeadmanSwitch
         _setTokenPrice(nextCertificateId, tokenPrice_);
 
         // Set token minter (the original artist)
-        _setTokenMinter(nextCertificateId);
+        _setTokenMinter(nextCertificateId, minter_);
         _setTokenCommissionProperty(nextCertificateId, commission_);
 
         // Create the certificate
         uint256 newCertificateId = nextCertificateId;
-        _mint(msg.sender, newCertificateId);
+        _mint(minter_, newCertificateId);
         certificateDataHashes[newCertificateId] = dataHash;
         nextCertificateId = nextCertificateId + 1;
 

@@ -17,7 +17,7 @@ interface QMSI721 {
   function tokenMinter(uint256 tokenId) external view returns (address);
   function buyToken(address from, uint256 tokenId) external;
   function trueMintingPrice() external view returns (uint256);
-  function create(bytes32 dataHash, string memory tokenURI_, uint256 tokenPrice_, uint256 commission_) external returns (uint);
+  function create(bytes32 dataHash, string memory tokenURI_, uint256 tokenPrice_, uint256 commission_, address minter_) external returns (uint);
 }
 /**
 The interface for calculating burnRate
@@ -241,6 +241,6 @@ contract QMSI_20 is ERC20, ERC20Spendable {
     uint256 burnValue = (mintingPrice*this.burnRate())/100;
     spend(burnValue);
     // CSHP: 1.3. Is this a better alternative to approving each 721 using a spender role?
-    return QMSI721(market).create(dataHash, tokenURI_, tokenPrice_, commission_);
+    return QMSI721(market).create(dataHash, tokenURI_, tokenPrice_, commission_, msg.sender);
   }
 }
