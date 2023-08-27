@@ -72,7 +72,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
     ERC20Spendable _mintingCurrency;
 
     /// @dev The serial number of the next certificate to create
-    uint256 nextCertificateId = 1;
+    uint256 public nextCertificateId = 1;
 
     mapping(uint256 => bytes32) certificateDataHashes;
 
