@@ -21,6 +21,8 @@ abstract contract DeadmanSwitch is Ownable {
         _kin = msg.sender;
         _timestamp = block.timestamp;
     }
+    // @notice Event for when deadman switch is set
+    event SetDeadSwitch(address indexed kin_, uint256 indexed days_);
     /**
     * @notice to be used by contract owner to set a deadman switch in the event of worse case scenario
     * @param kin_ the address of the next owner of the smart contract if the owner dies
@@ -31,6 +33,7 @@ abstract contract DeadmanSwitch is Ownable {
       require(kin_ != address(0), CANNOT_TRANSFER_TO_ZERO_ADDRESS);
       _kin = kin_;
       _timestamp = block.timestamp + (days_ * 1 days);
+      emit SetDeadSwitch(kin_, days_);
       return true;
     }
     /**
@@ -62,8 +65,29 @@ abstract contract DeadmanSwitch is Ownable {
 
 contract QMSI_721 is NFToken, DeadmanSwitch
 {
-    // @notice Event for when NFT is solf
+    // @notice Event for when NFT is sold
     event SoldNFT(address indexed seller, uint256 indexed tokenId, address indexed buyer);
+
+    // @notice Event for when NFT is minted
+    event MintedNFT(address indexed minter, uint256 indexed tokenId);
+
+    // @notice Event for when minting currency is set
+    event SetMintCurrency(ERC20Spendable indexed qmsi);
+    
+    // @notice Event for when mint price changes
+    event SetMintPrice(uint256 indexed price);
+
+    // @notice Event for when base URI is set
+    event SetBaseURI(string indexed baseURI);
+
+    // @notice Event for when NFT price changes
+    event SetNFTPrice(address indexed seller, uint256 indexed tokenId, uint256 indexed price);
+
+    // @notice Event for when NFT token commission changes
+    event SetTokenCommission(address indexed minter, uint256 indexed tokenId, uint256 indexed percentage);
+
+    // @notice Event for when NFT URI location changes
+    event SetTokenURI(address indexed minter, uint256 indexed tokenId, string indexed tokenURI);
 
     /// @notice The price to create new certificates
     uint256 _mintingPrice;
@@ -126,6 +150,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      */
     function setMintingPrice(uint256 newMintingPrice) onlyOwner external {
         _mintingPrice = newMintingPrice;
+        emit SetMintPrice(newMintingPrice);
     }
 
     /**
@@ -134,6 +159,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      */
     function setMintingCurrency(ERC20Spendable newMintingCurrency) onlyOwner external {
         _mintingCurrency = newMintingCurrency;
+        emit SetMintCurrency(newMintingCurrency);
     }
 
     // Base URI
@@ -159,6 +185,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      */
     function setBaseURI(string memory baseURI_) external onlyOwner() {
         _baseURIextended = baseURI_;
+        emit SetBaseURI(baseURI_);
     }
 
 
@@ -195,6 +222,8 @@ contract QMSI_721 is NFToken, DeadmanSwitch
         require(msg.sender == _tokenMinter[tokenId], "QMSI-ERC721: Must be the original minter to set commission rate");
         require(percentage_ >= 0 && percentage_ <= 100, "QMSI-ERC721: Commission property must be a percent integer");
         _setTokenCommissionProperty(tokenId, percentage_);
+        emit SetTokenCommission(msg.sender, tokenId, percentage_);
+
     }
 
     /**
@@ -230,6 +259,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
         require(msg.sender == idToOwner[tokenId], "QMSI-ERC721: Must own token in order to sell");
         require(_tokenPrice > 0, "QMSI-ERC721: Must set a price to sell token for");
         _setTokenPrice(tokenId, _tokenPrice);
+        emit SetNFTPrice(msg.sender, tokenId, _tokenPrice);
     }
 
     /**
@@ -242,6 +272,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
         require(msg.sender == idToOwner[tokenId], "QMSI-ERC721: Must own token in order to remove listing");
         require(_tokenPrices[tokenId] > 0, "QMSI-ERC721: Must be selling in order to remove listing");
         _tokenPrices[tokenId] = 0;
+        emit SetNFTPrice(msg.sender, tokenId, 0);
     }
 
     /**
@@ -254,6 +285,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
         require(bytes(_tokenURIs[tokenId]).length > 0, "QMSI-ERC721: Nonexistent token");
         require(msg.sender == _tokenMinter[tokenId], "QMSI-ERC721: Must be the original minter to set URI");
         _setTokenURI(tokenId, tokenURI);
+        emit SetTokenURI(msg.sender, tokenId, tokenURI);
     }
 
     /**
@@ -363,6 +395,8 @@ contract QMSI_721 is NFToken, DeadmanSwitch
         _mint(minter_, newCertificateId);
         certificateDataHashes[newCertificateId] = dataHash;
         nextCertificateId = nextCertificateId + 1;
+        // Emit that we minted an NFT
+        emit MintedNFT(minter_, newCertificateId);
 
         return newCertificateId;
     }
