@@ -183,7 +183,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      * @param baseURI_ the string that goes at the beginning of all token URI
      *
      */
-    function setBaseURI(string memory baseURI_) external onlyOwner() {
+    function setBaseURI(string calldata baseURI_) external onlyOwner() {
         _baseURIextended = baseURI_;
         emit SetBaseURI(baseURI_);
     }
@@ -195,7 +195,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      * @param _tokenURI a string that contains the URL of the artifact's location.
      *
      */
-    function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal virtual {
+    function _setTokenURI(uint256 tokenId, string calldata _tokenURI) internal virtual {
         require(bytes(_tokenURI).length > 0, "QMSI-ERC721: token URI cannot be empty");
         _tokenURIs[tokenId] = _tokenURI;
     }
@@ -278,14 +278,14 @@ contract QMSI_721 is NFToken, DeadmanSwitch
     /**
      * @notice used for setting the certificate artifact remote location
      * @param tokenId the id of the certificate that we want to set the remote location of
-     * @param tokenURI a string that contains the URL of the artifact's location.
+     * @param _tokenURI a string that contains the URL of the artifact's location.
      *
      */
-    function setTokenURI(uint256 tokenId, string memory tokenURI) external {
+    function setTokenURI(uint256 tokenId, string calldata _tokenURI) external {
         require(bytes(_tokenURIs[tokenId]).length > 0, "QMSI-ERC721: Nonexistent token");
         require(msg.sender == _tokenMinter[tokenId], "QMSI-ERC721: Must be the original minter to set URI");
-        _setTokenURI(tokenId, tokenURI);
-        emit SetTokenURI(msg.sender, tokenId, tokenURI);
+        _setTokenURI(tokenId, _tokenURI);
+        emit SetTokenURI(msg.sender, tokenId, _tokenURI);
     }
 
     /**
@@ -376,7 +376,7 @@ contract QMSI_721 is NFToken, DeadmanSwitch
      * @return The new certificate ID
      *
      */
-    function create(bytes32 dataHash, string memory tokenURI_, uint256 tokenPrice_, uint256 commission_, address minter_) external returns (uint) {
+    function create(bytes32 dataHash, string calldata tokenURI_, uint256 tokenPrice_, uint256 commission_, address minter_) external returns (uint) {
         require(_isContract(msg.sender) == true, "QMSI-ERC721: Only contract addresses can use this function");
         require(msg.sender == address(_mintingCurrency), "QMSI-ERC721: Only the set currency can create NFT on behalf of the user");
 
