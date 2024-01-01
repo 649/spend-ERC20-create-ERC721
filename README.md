@@ -41,17 +41,15 @@ The following contract addresses can be found on the Ethereum mainnet
 
 ### Using testnet
 The following contract addresses can be found on the Goerli testnet
-* QMSI-ERC20: 0x8407D89E3EaE3083aC1bC774508Fce0CB0de3E27
-* QMSI-ERC721: 0x8aaE0af229785dFC973144c3D88396E9f975C2DB
+* QMSI-ERC20: [0x8407D89E3EaE3083aC1bC774508Fce0CB0de3E27](https://goerli.etherscan.io/address/0x8407D89E3EaE3083aC1bC774508Fce0CB0de3E27)
+* QMSI-ERC721: [0x8aaE0af229785dFC973144c3D88396E9f975C2DB](https://goerli.etherscan.io/address/0x8aaE0af229785dFC973144c3D88396E9f975C2DB)
 
 ### Using our site
-Install MetaMask and visit https://qumosi.com/about.php to request an invite key
+Install MetaMask and visit https://qumosi.com/register.php to create an account.
 
-Once you have an invite key, register an account at https://qumosi.com/register.php
-Switch Metamask network to Goerli testnet and make sure to have some testnet ETH to cover gas fees
-We have a preconfigured Uniswap liquidity pool that can be used to trade testnet ETH for testnet QMSI
+Once registered, you may connect your wallet and leverage the smart contract alongside the site's own functionality. 
 
-You can use your testnet QMSI ERC20 tokens to mint new projects on https://qumosi.com while also being able to sponsor other projects
+If you wish to interact with the smart contracts directly, use https://qmosi.com/ (without the "u").
 
 ## How does it work
 
