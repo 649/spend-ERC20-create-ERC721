@@ -3,16 +3,20 @@
 This is a fork of @fulldecent's https://fulldecent.github.io/spend-ERC20-create-ERC721/
 
 This smart contract is what powers https://qumosi.com/
-
+To interact with the smart contract directly, visit https://qmosi.com/ 
 
 The following are promises this ERC20 smart contract aims to accomplish:
-1. Contract owner deploys QMSI-ERC20 contract with immutable max supply
+1. QMSI-ERC20 contract has an immutable max supply
 2. Users are able to mint ERC721 certificates using QMSI-ERC20 interface on any QMSI-ERC721
 3. Users are able to buy ERC721 certificates using QMSI-ERC20 interface on any QMSI-ERC721
 4. Users are able to burn their own QMSI-ERC20 tokens
 5. Users are able to lock their own QMSI-ERC20 tokens to reclaim burned tokens by trading time
 6. Users are able to set allowances and transfer tokens
 7. Users are able to link their Qumosi.com profile
+8. Users are able to earn free QMSI-ERC20 tokens by drinking from a faucet that rewards using a negative decay formula (`e^(-1/100)`) while simultaneously influenced by halving events
+9. Users are able to earn QMSI-ERC20 via commissions collected from QMSI-ERC721 transacted
+10. QMSI-ERC20 holds a one to many relationship with QMSI-ERC721 variants with no pre-approvals required
+11. QMSI-ERC20 can sustain its remaining state changing supply after faucet runs dry
 
 The following are promises this ERC721 smart contract aims to accomplish:
 1. Contract owner deploys QMSI-ERC721 contract with ability to set cost of minting certificate
@@ -30,7 +34,10 @@ The following are promises this ERC721 smart contract aims to accomplish:
 13. Certificate owners and approved users are able to remove sell listings on QMSI-ERC721 certificates
 
 
-## Try the beta
+## Using mainnet
+The following contract addresses can be found on the Ethereum mainnet
+* QMSI-ERC20: 0x1B06DfdcE22bE46C89ECF43EE72C6D710F4A46fC
+* QMSI-ERC721: 0xA0D1025bC39106b04B755b96645498f351781B33
 
 ### Using testnet
 The following contract addresses can be found on the Goerli testnet
@@ -76,7 +83,13 @@ You can use your testnet QMSI ERC20 tokens to mint new projects on https://qumos
 * `tokenURI(uint256 tokenId) view` — Returns the resource link to the token's (JSON) artifact. Implemented using [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts/pull/2511/files)
 * `tokenCommission(uint256 tokenId) view` — Returns the percent token commission rate that is taken by the original minter per SoldNFT event
 
-**ERC-20 token contract** — This is a standard ERC-721 contract implemented using the [OpenZeppelin template](https://github.com/OpenZeppelin/openzeppelin-solidity/tree/master/contracts/token/ERC20) with additional functions:
+**ERC-20 token contract** — This is a standard ERC-20 contract implemented using the [OpenZeppelin template](https://github.com/OpenZeppelin/openzeppelin-solidity/tree/master/contracts/token/ERC20) with additional functions:
+* `drinkFromFaucet()` — Allows end user to earn QMSI ERC-20 tokens by following negative decay curve for token distribution, reset each day.
+* `dailyClaimLimit() view` — Showcases the number of QMSI ERC-20 tokens that are available to claim per day. This number is influenced by the halving events.
+* `daysConsumed() view` — Showcases number of days the faucet was used.
+* `halvingInterval() view` — Tracks the interval for halving events that slash daily reward limit by 1/2 each time. Each unit for the interval is based off of daysConsumed.
+* `rewardPerClaim() view` — Showcases how much potential rewards can be earned by drinking from the faucet. This value changes if another user drinks after its execution. 
+* `tokensClaimedToday() view` — Tracks the number of total tokens claimed in the current day. Cannot surpass the daily claim limit. 
 
 * `spend(uint256 value)` — Allows end user to burn their own tokens. It can only be triggered by the user, and is used in minting new certificates.
 * `burnPool() view` — Returns the amount of tokens that can be reclaimed through staking. Using the `spend` function increments this pool
@@ -102,7 +115,7 @@ The following are key differences in the smart contract implementation from the 
 * The ERC20 implementation has no owner role
 * The ERC721 implementation has a deadman switch to protect the owner role by transferring ownership to a kin if the switch is not renewed by the owner via a defined time interval
 * The ERC20 implementation has burn and stake functions that are assumed to self sustain token supply since no liquidity is lost, only state changed. This does not account for impermanent loss
-* The ERC20 implementation has no mint capability within other than the one used once during the contract deployment, inside the constructor
+* The ERC20 implementation has a negative decay formula (`e^(-1/100)`) for awarding users free tokens via a faucet function. Each day the user can claim the faucet once, slowly decreasing the reward each time, reset once each day, influenced by halving intervals that occur every 4 years of faucet usage. The faucet is the only way to introduce new tokens to the supply, not surpassing the maximum limit that is immutable.
 * The ERC20 implementation aims to fix the "rice and chessboard" problem in staking by allowing rewards to come from burned tokens only
 * The ERC20 implementation requires the user to supply the commission rate and token price when buying a NFT certificate to prevent users from transacting with old information that could have changed (for example, while viewing a webpage and not refreshing it after a change in price or commission)
 * The ERC20 implementation requires the user to supply the minting price set by the ERC721 implementation (without the burn rate applied) to prevent users from burning an unidentified amount when minting new certificates (for example, minting a new certificate while not checking to see if the minting price had changed)

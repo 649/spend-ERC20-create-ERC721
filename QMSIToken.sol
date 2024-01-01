@@ -126,13 +126,7 @@ abstract contract ERC20Spendable is ERC20 {
     require( QMSI20(address(this)).circulatingSupply() + rewardPerClaim < QMSI20(address(this)).maxSupply(), "QMSI-ERC20: cannot drink above cup size"); // make sure we cannot go above max supply
     require(tokensClaimedToday + rewardPerClaim <= dailyClaimLimit, "QMSI-ERC20: Faucet has reached its daily limit");
 
-    // make it so claim starts high daily but gets divided each time someone uses it, next day it is reset (that way everyone gets something)
-    // ^ with that, we'll never hit 0 tokens to give out
-
-    // daily claimants limit amount of participants on the network, we don't want that
-    // maybe we should divide the reward on the day by 2 each time someone claims?
-    // that way we NEVER hit the daily dailyClaimLimit
-
+    // Tracks the last time user drank from faucet
     lastClaim[msg.sender] = block.timestamp;
 
     // Transfer tokens to the claimer
