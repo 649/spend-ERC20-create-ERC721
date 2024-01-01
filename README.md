@@ -88,6 +88,7 @@ If you wish to interact with the smart contracts directly, use https://qmosi.com
 * `halvingInterval() view` — Tracks the interval for halving events that slash daily reward limit by 1/2 each time. Each unit for the interval is based off of daysConsumed.
 * `rewardPerClaim() view` — Showcases how much potential rewards can be earned by drinking from the faucet. This value changes if another user drinks after its execution. 
 * `tokensClaimedToday() view` — Tracks the number of total tokens claimed in the current day. Cannot surpass the daily claim limit. 
+* `lastClaim(address) view` — Tracks the last time the user used the faucet via `block.timestamp`.
 
 * `spend(uint256 value)` — Allows end user to burn their own tokens. It can only be triggered by the user, and is used in minting new certificates.
 * `burnPool() view` — Returns the amount of tokens that can be reclaimed through staking. Using the `spend` function increments this pool
