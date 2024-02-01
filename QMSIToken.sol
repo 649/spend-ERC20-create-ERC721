@@ -305,7 +305,7 @@ contract QMSI_20 is ERC20, ERC20Spendable {
 
   /**
    * @dev Function to buy certificate using tokens from this contract if certificate is for sale.
-   * @param market the address of the certificate contract, must be a spender
+   * @param market the address of the certificate contract
    * @param to the address of who we're sending tokens to
    * @param tokenId the tokenId of the token we're buying from market
    * @param tokenPrice_ the price of the token, used so after page load it is cached in the request
@@ -355,7 +355,7 @@ contract QMSI_20 is ERC20, ERC20Spendable {
     require(tokenPrice_ <= maxSupply() && tokenPrice_ >= 0 && mintingPrice_ <= maxSupply() && mintingPrice_ >= 0, "QMSI-ERC20: Invalid units for token or minting prices");
     require(commission_ <= 100 && commission_ >= 0, "QMSI-ERC721: Commission must be a percent");
     require(bytes(tokenURI_).length > 0, "QMSI-ERC721: Must define token URI string");
-    // determine value that needs to be burrned, will always be equal to or less than minting price
+    // determine value that needs to be burned, will always be equal to or less than minting price
     uint256 burnValue = (mintingPrice*this.burnRate())/100;
     require(balanceOf(msg.sender) >= burnValue, "QMSI-ERC20: Insufficient tokens");
     spend(burnValue);
